@@ -1,13 +1,30 @@
 package io.delanalytics.androidsensorsniffer;
-
-import android.support.v7.app.AppCompatActivity;
+import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import com.google.firebase.FirebaseApp;
 
-public class SensorDashboard extends AppCompatActivity {
+import java.util.concurrent.TimeUnit;
+
+public class SensorDashboard extends Activity {
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_sensor_dashboard);
+        FirebaseApp.initializeApp(this);
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        System.out.println("I have fired!");
+        Intent intent = new Intent(this, Rotation.class);
+        startService(intent);
+
     }
 }

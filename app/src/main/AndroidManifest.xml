@@ -16,6 +16,19 @@
 				<category android:name="android.intent.category.LAUNCHER"/>
 			</intent-filter>
 		</activity>
+
+		<service
+				android:name=".Accelerometer"
+				android:exported="false">
+		</service>
+		<service
+				android:name=".Gyroscope"
+				android:exported="false">
+		</service>
+		<service
+				android:name=".Rotation"
+				android:exported="false">
+		</service>
 	</application>
 
 </manifest>
