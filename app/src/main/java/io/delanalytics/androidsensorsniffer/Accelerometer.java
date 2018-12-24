@@ -1,4 +1,5 @@
 package io.delanalytics.androidsensorsniffer;
+
 import android.app.IntentService;
 import android.content.Intent;
 import android.content.Context;
@@ -30,11 +31,10 @@ public class Accelerometer extends IntentService {
         Log.i(TAG, "Started Collecting Data");
 
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        mAccelerometer =new AccelerometerSniff();
+        mAccelerometer = new AccelerometerSniff();
         mAccelerometer.start();
 
     }
-
 
 
     class AccelerometerSniff implements SensorEventListener {
@@ -60,15 +60,16 @@ public class Accelerometer extends IntentService {
             mSensorManager.unregisterListener(this);
         }
 
-        public Map<String, Object> createDataObject( float[] data){
+        public Map<String, Object> createDataObject(float[] data) {
             Map<String, Object> acc = new HashMap<>();
             acc.put("Gx", data[0]);
-            acc.put("Gy",data[1]);
+            acc.put("Gy", data[1]);
             acc.put("Gz", data[2]);
             acc.put("device_id", "test");
             acc.put("EventTs", new Date().toString());
             return acc;
         }
+
         public void onSensorChanged(SensorEvent event) {
             // we received a sensor event. it is a good practice to check
             // that we received the proper event

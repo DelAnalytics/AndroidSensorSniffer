@@ -92,5 +92,4 @@ public class Gyroscope extends IntentService {
     public IBinder onBind(Intent intent) {
         return null;
     }
-
 }
