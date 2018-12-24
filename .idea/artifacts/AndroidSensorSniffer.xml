@@ -1,0 +1,12 @@
+<component name="ArtifactManager">
+  <artifact name="AndroidSensorSniffer">
+    <output-path>$PROJECT_DIR$/build/classes/artifacts/AndroidSensorSniffer</output-path>
+    <root id="root">
+      <element id="directory" name="WEB-INF">
+        <element id="directory" name="classes">
+          <element id="module-output" name="AndroidSensorSniffer" />
+        </element>
+      </element>
+    </root>
+  </artifact>
+</component>

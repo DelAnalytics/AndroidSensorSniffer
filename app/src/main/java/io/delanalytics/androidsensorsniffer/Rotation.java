@@ -10,6 +10,11 @@ import android.hardware.SensorManager;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Rotation extends IntentService {
     private SensorManager mSensorManager;
@@ -33,7 +38,7 @@ public class Rotation extends IntentService {
 
     class RotationSniff implements SensorEventListener {
         private Sensor mRotation;
-
+        protected FirebaseFirestore db;
 
         public RotationSniff() {
             mRotation = mSensorManager.getDefaultSensor(
@@ -43,8 +48,20 @@ public class Rotation extends IntentService {
         public void start() {
             // enable our sensor when the activity is resumed, ask for
             // 10 ms updates.
+            db = FirebaseFirestore.getInstance();
             mSensorManager.registerListener(this, mRotation, SensorManager.SENSOR_DELAY_NORMAL);
 
+        }
+        public Map<String, Object> createDataObject(float[] data){
+            Map<String, Object> rot = new HashMap<>();
+            rot.put("x*sin(θ/2)", data[0]);
+            rot.put("y*sin(θ/2) ",data[1]);
+            rot.put("z*sin(θ/2) ", data[2]);
+            rot.put("cos(θ/2)", data[3]);
+            rot.put("Est_heading", data[4]);
+            rot.put("device_id", "test");
+            rot.put("EventTs", new Date().toString());
+            return rot;
         }
 
         public void stop() {
@@ -59,11 +76,11 @@ public class Rotation extends IntentService {
             Log.i(TAG, "Sensor is triggered " + sensor);
             switch (sensor) {
                 case "Rotation Vector":
-                    System.out.println("This is the Rotation worker");
+                    Map<String, Object> rot = createDataObject(event.values);
+                    db.collection("rotation").add(rot);
             }
 
         }
-
 
         public void onAccuracyChanged(Sensor sensor, int accuracy) {
             System.out.println("I am triggered");

@@ -18,10 +18,6 @@
 		</activity>
 
 		<service
-				android:name=".CollectSensorDataService"
-				android:exported="false">
-		</service>
-		<service
 				android:name=".Accelerometer"
 				android:exported="false">
 		</service>

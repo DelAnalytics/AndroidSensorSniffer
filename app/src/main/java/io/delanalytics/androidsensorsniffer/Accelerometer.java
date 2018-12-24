@@ -9,6 +9,11 @@ import android.hardware.SensorManager;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Accelerometer extends IntentService {
     private SensorManager mSensorManager;
@@ -23,6 +28,7 @@ public class Accelerometer extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         Log.i(TAG, "Started Collecting Data");
+
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         mAccelerometer =new AccelerometerSniff();
         mAccelerometer.start();
@@ -30,9 +36,10 @@ public class Accelerometer extends IntentService {
     }
 
 
+
     class AccelerometerSniff implements SensorEventListener {
         private Sensor mAccelerometer;
-
+        protected FirebaseFirestore db;
 
         public AccelerometerSniff() {
             mAccelerometer = mSensorManager.getDefaultSensor(
@@ -42,6 +49,8 @@ public class Accelerometer extends IntentService {
         public void start() {
             // enable our sensor when the activity is resumed, ask for
             // 10 ms updates.
+
+            db = FirebaseFirestore.getInstance();
             mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 
         }
@@ -51,6 +60,15 @@ public class Accelerometer extends IntentService {
             mSensorManager.unregisterListener(this);
         }
 
+        public Map<String, Object> createDataObject( float[] data){
+            Map<String, Object> acc = new HashMap<>();
+            acc.put("Gx", data[0]);
+            acc.put("Gy",data[1]);
+            acc.put("Gz", data[2]);
+            acc.put("device_id", "test");
+            acc.put("EventTs", new Date().toString());
+            return acc;
+        }
         public void onSensorChanged(SensorEvent event) {
             // we received a sensor event. it is a good practice to check
             // that we received the proper event
@@ -58,7 +76,10 @@ public class Accelerometer extends IntentService {
             Log.i(TAG, "Sensor is triggered " + sensor);
             switch (sensor) {
                 case "K6DS3TR Accelerometer":
-                    System.out.println("This is the Acc worker");
+                    Log.d(TAG, "i AM GDSLKJGH");
+                    Map<String, Object> accc = createDataObject(event.values);
+                    db.collection("accelerometer").add(accc);
+
             }
 
         }
