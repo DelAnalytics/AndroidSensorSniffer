@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<integer name="NUMBER_OF_RECORDS">20</integer>
+	<integer name="SNIFF_DURATION">20</integer>
+	<integer name="SNIFF_SLEEP">20</integer>
+</resources>

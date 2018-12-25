@@ -1,6 +1,7 @@
 package io.delanalytics.androidsensorsniffer;
 
 import android.app.IntentService;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.content.Context;
 import android.hardware.Sensor;
@@ -10,31 +11,39 @@ import android.hardware.SensorManager;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import com.firebase.jobdispatcher.JobParameters;
+import com.firebase.jobdispatcher.JobService;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Rotation extends IntentService {
+
+public class Rotation extends JobService {
     private SensorManager mSensorManager;
     private Rotation.RotationSniff mRotation;
     private static final String TAG = "rotation_sniffer";
-
-    public Rotation() {
-        super("Rotation");
-    }
-
+    private int records_added;
+    BluetoothAdapter myDevice = BluetoothAdapter.getDefaultAdapter();
+    String deviceName = myDevice.getName();
 
 
     @Override
-    protected void onHandleIntent(Intent intent) {
-        Log.i(TAG, "Started Collecting Data");
+    public boolean onStartJob(JobParameters params) {
+        records_added = 0;
+        Log.i(TAG, "Started Collecting Rotation Data");
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        mRotation =new RotationSniff();
+        mRotation = new RotationSniff();
         mRotation.start();
+        return false;
     }
 
+    @Override
+    public boolean onStopJob(JobParameters params) {
+        mRotation.stop();
+        return false;
+    }
 
     class RotationSniff implements SensorEventListener {
         private Sensor mRotation;
@@ -46,20 +55,19 @@ public class Rotation extends IntentService {
         }
 
         public void start() {
-            // enable our sensor when the activity is resumed, ask for
-            // 10 ms updates.
             db = FirebaseFirestore.getInstance();
             mSensorManager.registerListener(this, mRotation, SensorManager.SENSOR_DELAY_NORMAL);
 
         }
-        public Map<String, Object> createDataObject(float[] data){
+
+        public Map<String, Object> createDataObject(float[] data) {
             Map<String, Object> rot = new HashMap<>();
             rot.put("x*sin(θ/2)", data[0]);
-            rot.put("y*sin(θ/2) ",data[1]);
+            rot.put("y*sin(θ/2) ", data[1]);
             rot.put("z*sin(θ/2) ", data[2]);
             rot.put("cos(θ/2)", data[3]);
             rot.put("Est_heading", data[4]);
-            rot.put("device_id", "test");
+            rot.put("device_id", deviceName.hashCode());
             rot.put("EventTs", new Date().toString());
             return rot;
         }
@@ -70,28 +78,16 @@ public class Rotation extends IntentService {
         }
 
         public void onSensorChanged(SensorEvent event) {
-            // we received a sensor event. it is a good practice to check
-            // that we received the proper event
-            String sensor = event.sensor.getName();
-            Log.i(TAG, "Sensor is triggered " + sensor);
-            switch (sensor) {
-                case "Rotation Vector":
-                    Map<String, Object> rot = createDataObject(event.values);
-                    db.collection("rotation").add(rot);
+            Map<String, Object> rot = createDataObject(event.values);
+            db.collection("rotation").add(rot);
+            records_added += 1;
+            if (records_added >= R.integer.NUMBER_OF_RECORDS) {
+                stop();
             }
-
         }
 
         public void onAccuracyChanged(Sensor sensor, int accuracy) {
-            System.out.println("I am triggered");
         }
-
-    }
-
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
     }
 
 }

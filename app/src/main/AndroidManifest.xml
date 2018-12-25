@@ -20,6 +20,9 @@
 		<service
 				android:name=".Accelerometer"
 				android:exported="false">
+			<intent-filter>
+				<action android:name="com.firebase.jobdispatcher.ACTION_EXECUTE"/>
+			</intent-filter>
 		</service>
 		<service
 				android:name=".Gyroscope"
@@ -30,5 +33,5 @@
 				android:exported="false">
 		</service>
 	</application>
-
+	<uses-permission android:name="android.permission.BLUETOOTH"/>
 </manifest>
