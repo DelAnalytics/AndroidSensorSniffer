@@ -10,6 +10,8 @@ import android.util.Log;
 import com.firebase.jobdispatcher.JobParameters;
 import com.firebase.jobdispatcher.JobService;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,6 +44,7 @@ public class Gyroscope extends JobService {
     class GyroscopeSniff implements SensorEventListener {
         private Sensor mGyroscope;
         protected FirebaseFirestore db;
+
         BluetoothAdapter myDevice = BluetoothAdapter.getDefaultAdapter();
         String deviceName = myDevice.getName();
 
@@ -53,6 +56,10 @@ public class Gyroscope extends JobService {
             // enable our sensor when the activity is resumed, ask for
             // 10 ms updates.
             db = FirebaseFirestore.getInstance();
+            FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                    .setTimestampsInSnapshotsEnabled(true)
+                    .build();
+            db.setFirestoreSettings(settings);
             mSensorManager.registerListener(this, mGyroscope, SensorManager.SENSOR_DELAY_NORMAL);
 
 
@@ -77,7 +84,7 @@ public class Gyroscope extends JobService {
             Map<String, Object> gyro = createDataObject(event.values);
             db.collection("gyroscope").add(gyro);
             records_added += 1;
-            if (records_added >= R.integer.NUMBER_OF_RECORDS) {
+            if (records_added >= 10) {
                 stop();
             }
 

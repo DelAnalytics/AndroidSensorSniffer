@@ -7,10 +7,12 @@ import android.hardware.SensorManager;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.util.Log;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.firebase.jobdispatcher.JobParameters;
 import com.firebase.jobdispatcher.JobService;
-import java.util.Date;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,7 +24,6 @@ public class Accelerometer extends JobService {
     private int records_added;
     BluetoothAdapter myDevice = BluetoothAdapter.getDefaultAdapter();
     String deviceName = myDevice.getName();
-
     @Override
     public boolean onStartJob(JobParameters job) {
         records_added = 0;
@@ -52,6 +53,10 @@ public class Accelerometer extends JobService {
 
         public void start() {
             db = FirebaseFirestore.getInstance();
+            FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                    .setTimestampsInSnapshotsEnabled(true)
+                    .build();
+            db.setFirestoreSettings(settings);
             mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 
         }
@@ -63,20 +68,21 @@ public class Accelerometer extends JobService {
         }
 
         public Map<String, Object> createDataObject(float[] data) {
+
             Map<String, Object> acc = new HashMap<>();
             acc.put("Gx", data[0]);
             acc.put("Gy", data[1]);
             acc.put("Gz", data[2]);
             acc.put("device_id", myDevice.hashCode());
-            acc.put("EventTs", new Date().toString());
+            acc.put("EventTs", Timestamp.now());
             return acc;
         }
 
         public void onSensorChanged(SensorEvent event) {
-            Map<String, Object> accc = createDataObject(event.values);
-            db.collection("accelerometer").add(accc);
+            Map<String, Object> acc = createDataObject(event.values);
+            db.collection("accelerometer").add(acc);
             records_added += 1;
-            if (records_added >= R.integer.NUMBER_OF_RECORDS){
+            if (records_added >= 10){
                 stop();
                 }
             }

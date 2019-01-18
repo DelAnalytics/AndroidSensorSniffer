@@ -14,6 +14,7 @@ import android.util.Log;
 import com.firebase.jobdispatcher.JobParameters;
 import com.firebase.jobdispatcher.JobService;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -56,6 +57,10 @@ public class Rotation extends JobService {
 
         public void start() {
             db = FirebaseFirestore.getInstance();
+            FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                    .setTimestampsInSnapshotsEnabled(true)
+                    .build();
+            db.setFirestoreSettings(settings);
             mSensorManager.registerListener(this, mRotation, SensorManager.SENSOR_DELAY_NORMAL);
 
         }
@@ -81,7 +86,7 @@ public class Rotation extends JobService {
             Map<String, Object> rot = createDataObject(event.values);
             db.collection("rotation").add(rot);
             records_added += 1;
-            if (records_added >= R.integer.NUMBER_OF_RECORDS) {
+            if (records_added >= 10) {
                 stop();
             }
         }
